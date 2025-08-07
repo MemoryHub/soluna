@@ -1,0 +1,28 @@
+{
+  "name": "王丽",
+  "age": 32,
+  "gender": "female",
+  "occupation": "中学教师",
+  "background": "王丽毕业于师范大学，现在在一所重点中学担任语文教师。她热爱教育事业，善于启发学生思考，教学风格生动有趣，深受学生喜爱。王丽喜欢阅读和写作，出版过一本散文集。她还积极参与公益活动，经常组织学生去养老院献爱心。",
+  "personality": ["温柔", "善良", "耐心", "有责任感"],
+  "hobbies": ["阅读", "写作", "旅行", "瑜伽"],
+  "relationships": {},
+  "daily_routine": [
+    {"time": "06:30", "activity": "起床", "location": "家里"},
+    {"time": "07:00", "activity": "瑜伽", "location": "家里"},
+    {"time": "07:30", "activity": "吃早餐", "location": "家里"},
+    {"time": "08:30", "activity": "上班", "location": "学校"},
+    {"time": "09:00", "activity": "上课", "location": "教室"},
+    {"time": "12:00", "activity": "吃午餐", "location": "学校食堂"},
+    {"time": "13:00", "activity": "备课", "location": "办公室"},
+    {"time": "14:00", "activity": "上课", "location": "教室"},
+    {"time": "17:00", "activity": "批改作业", "location": "办公室"},
+    {"time": "18:00", "activity": "下班", "location": "从学校回家"},
+    {"time": "19:00", "activity": "吃晚餐", "location": "家里"},
+    {"time": "20:00", "activity": "阅读或写作", "location": "家里"},
+    {"time": "22:00", "activity": "睡觉", "location": "家里"},
+    {"time": "周六 10:00", "activity": "去养老院做义工", "location": "养老院"}
+  ],
+  "character_id": "wang_li_9012",
+  "is_preset": true
+}
