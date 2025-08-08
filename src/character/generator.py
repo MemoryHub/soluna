@@ -4,6 +4,7 @@ import random
 import uuid
 from typing import List, Dict, Optional, Any
 from character import Character
+
 from .data import (
     mbti_types, mbti_personality_map, big5_traits, motivations, conflicts,
     flaws, character_arcs, first_names, last_names, occupations, hobbies,
