@@ -1,9 +1,11 @@
 import random
+import inspect
 from typing import List, Dict, Any
-from .data import (
+from data import (
     daily_activities, occupations, topics, taboos, beliefs, goals, fears,
     hobbies, speech_styles, tones, response_speeds, communication_styles
 )
+from character import Character
 
 
 def generate_background(age: int, occupation: str) -> str:
@@ -92,3 +94,27 @@ def generate_daily_routine(occupation: str) -> List[Dict[str, Any]]:
         routine.append(weekend_activity)
 
     return routine
+
+
+def get_character_fields_description():
+    """从Character类动态获取字段信息并生成字段描述字符串"""
+    # 获取Character类的所有参数
+    character_fields = inspect.signature(Character.__init__).parameters
+    # 排除系统字段
+    system_fields = ['self', 'character_id', 'is_preset']
+    valid_fields = [field for field in character_fields if field not in system_fields]
+
+    # 构建字段描述字符串
+    fields_description = ""
+    for i, field in enumerate(valid_fields, 1):
+        # 从Character类的文档字符串中提取字段描述
+        doc = Character.__doc__
+        field_doc = ""
+        if doc:
+            for line in doc.split('\n'):
+                if f'{field}:' in line:
+                    field_doc = line.split(f'{field}:')[1].strip()
+                    break
+        fields_description += f"{i}. {field}: {field_doc}\n"
+
+    return fields_description

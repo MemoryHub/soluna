@@ -1,3 +1,2 @@
-# requirements.txt
-# This file lists the dependencies for the Soluna project
-# To install dependencies: pip install -r requirements.txt
+autogen-agentchat==0.7.2
+autogen-ext[openai]==0.7.2
