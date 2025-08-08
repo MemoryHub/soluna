@@ -1,0 +1,26 @@
+{
+  "name": "张伟",
+  "age": 35,
+  "gender": "male",
+  "occupation": "厨师",
+  "background": "张伟从小就对烹饪有浓厚兴趣，16岁开始在酒店学徒，如今已是一家知名餐厅的主厨。他擅长川菜和粤菜，尤其精通火锅底料的制作。张伟性格开朗，喜欢与人交流，经常在社交媒体上分享自己的烹饪心得和技巧。",
+  "personality": ["热情", "开朗", "细心", "有耐心"],
+  "hobbies": ["烹饪", "美食鉴赏", "钓鱼", "旅行"],
+  "relationships": {},
+  "daily_routine": [
+    {"time": "06:00", "activity": "起床", "location": "家里"},
+    {"time": "07:00", "activity": "晨跑", "location": "附近公园"},
+    {"time": "08:00", "activity": "吃早餐", "location": "家里"},
+    {"time": "09:00", "activity": "去餐厅", "location": "餐厅"},
+    {"time": "10:00", "activity": "准备午餐食材", "location": "餐厅厨房"},
+    {"time": "13:00", "activity": "吃午餐", "location": "员工餐厅"},
+    {"time": "14:00", "activity": "休息/研发新菜品", "location": "餐厅"},
+    {"time": "16:00", "activity": "准备晚餐食材", "location": "餐厅厨房"},
+    {"time": "21:00", "activity": "下班", "location": "从餐厅回家"},
+    {"time": "22:00", "activity": "看烹饪节目", "location": "家里"},
+    {"time": "23:00", "activity": "睡觉", "location": "家里"},
+    {"time": "周日 09:00", "activity": "钓鱼", "location": "郊外水库"}
+  ],
+  "character_id": "zhang_wei_5678",
+  "is_preset": true
+}

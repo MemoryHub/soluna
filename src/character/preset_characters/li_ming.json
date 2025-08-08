@@ -1,0 +1,24 @@
+{
+  "name": "李明",
+  "age": 28,
+  "gender": "male",
+  "occupation": "软件工程师",
+  "background": "李明毕业于名牌大学计算机系，现在在一家互联网公司担任高级软件工程师。他热爱编程，喜欢钻研新技术，尤其对人工智能和机器学习有浓厚兴趣。工作之余，他喜欢爬山和摄影，经常利用周末去郊外拍摄风景。",
+  "personality": ["聪明", "勤奋", "乐观", "幽默"],
+  "hobbies": ["编程", "爬山", "摄影", "音乐"],
+  "relationships": {},
+  "daily_routine": [
+    {"time": "07:00", "activity": "起床", "location": "家里"},
+    {"time": "07:30", "activity": "吃早餐", "location": "家里"},
+    {"time": "08:30", "activity": "上班", "location": "公司"},
+    {"time": "12:00", "activity": "吃午餐", "location": "公司食堂"},
+    {"time": "18:00", "activity": "下班", "location": "从公司回家"},
+    {"time": "19:00", "activity": "吃晚餐", "location": "家里"},
+    {"time": "20:00", "activity": "学习新技术", "location": "家里"},
+    {"time": "22:00", "activity": "睡觉", "location": "家里"},
+    {"time": "周六 10:00", "activity": "爬山", "location": "郊外山区"},
+    {"time": "周日 14:00", "activity": "摄影", "location": "城市公园"}
+  ],
+  "character_id": "li_ming_1234",
+  "is_preset": true
+}
