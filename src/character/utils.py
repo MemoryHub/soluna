@@ -1,11 +1,12 @@
 import random
 import inspect
+import random
 from typing import List, Dict, Any
-from data import (
+from .data import (
     daily_activities, occupations, topics, taboos, beliefs, goals, fears,
     hobbies, speech_styles, tones, response_speeds, communication_styles
 )
-from character import Character
+from .model.character import Character
 
 
 def generate_background(age: int, occupation: str) -> str:

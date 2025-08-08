@@ -2,8 +2,9 @@ import os
 import json
 import random
 import uuid
+import os
 from typing import List, Dict, Optional, Any
-from character import Character
+from .model.character import Character
 
 from .data import (
     mbti_types, mbti_personality_map, big5_traits, motivations, conflicts,

@@ -3,6 +3,7 @@ import uuid
 import random
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional, Any
+from .event_profile import EventProfile
 
 
 @dataclass
@@ -50,6 +51,9 @@ class Character:
     # 记忆与经历
     memory: Dict[str, str]  # 角色记忆，key: 事件ID, value: 事件描述
 
+    # 事件相关字段
+    event_profile: EventProfile = None  # 角色事件配置
+
     # 系统字段
     character_id: str = None  # 角色唯一标识符，如不提供则自动生成
     is_preset: bool = False  # 是否为预设角色，预设角色为系统提供的示例角色
@@ -58,6 +62,10 @@ class Character:
         # 生成唯一ID
         if self.character_id is None:
             self.character_id = f"{self.name.lower().replace(' ', '_')}_{random.randint(1000, 9999)}"
+        
+        # 初始化事件配置
+        if self.event_profile is None:
+            self.event_profile = EventProfile(self.character_id)
 
     def to_dict(self) -> Dict[str, Any]:
         """将角色转换为字典"""

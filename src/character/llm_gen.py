@@ -1,14 +1,17 @@
 import asyncio
+import sys
+import os
+# 添加项目根目录到Python路径
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.conditions import MaxMessageTermination
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_ext.models.openai import OpenAIChatCompletionClient
-from character import Character
-import os
+from src.character.model.character import Character
 from dotenv import load_dotenv
 import json
-from prompts import GENERATOR_SYSTEM_MESSAGE_TEMPLATE, REVIEWER_SYSTEM_MESSAGE
-from utils import get_character_fields_description
+from src.character.prompts import GENERATOR_SYSTEM_MESSAGE_TEMPLATE, REVIEWER_SYSTEM_MESSAGE
+from src.character.utils import get_character_fields_description
 
 load_dotenv()
 
@@ -107,7 +110,7 @@ async def main():
     generator = CharacterLLMGenerator()
     try:
         # 生成一个角色
-        character = await generator.generate_character(name="张三", age=30, gender="男", occupation="软件工程师", language="Chinese")
+        character = await generator.generate_character(name="张三", age=23, gender="女", occupation="软件工程师", language="Chinese")
         print(f"生成的角色: {character.name}")
         print(character.to_json())
     except Exception as e:
