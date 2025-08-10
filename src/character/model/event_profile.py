@@ -13,6 +13,10 @@ class Event:
     status: str  # 事件状态：'not_started'(未发生), 'in_progress'(正在发生), 'completed'(已完成)
     is_key_event: bool  # 是否为关键节点事件
     impact: str  # 事件影响
+    location: str  # 事件发生地点
+    participants: List[str]  # 参与事件的人物列表
+    outcome: str  # 事件最终结果
+    emotion_score: float  # 情绪影响评分
     end_time: Optional[datetime] = None  # 结束时间
     dependencies: List[str] = None  # 依赖的事件ID列表
 
@@ -27,6 +31,7 @@ class Event:
 @dataclass
 class EventProfile:
     """角色事件配置类，存储角色的事件相关属性"""
+    id: str  # 事件配置唯一ID
     character_id: str  # 关联的角色ID
     life_path: List[Event]  # 生活轨迹表，由事件组成的数组
     current_stage: str  # 当前生活阶段
@@ -34,6 +39,7 @@ class EventProfile:
     event_triggers: Dict[str, Any]  # 事件触发条件
 
     def __init__(self, character_id: str):
+        self.id = str(uuid.uuid4())  # 生成唯一ID
         self.character_id = character_id
         self.life_path = []
         self.current_stage = ''

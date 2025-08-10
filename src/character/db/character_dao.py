@@ -1,4 +1,5 @@
 from src.db.mongo_client import mongo_client
+from src.character.model.character import Character
 
 class CharacterDAO:
     def __init__(self):
@@ -47,10 +48,16 @@ class CharacterDAO:
             character_id: 角色ID
 
         Returns:
-            dict: 角色数据
+            Character: 角色对象
         """
         try:
-            return self.characters_collection.find_one({'character_id': character_id})
+            character_dict = self.characters_collection.find_one({'character_id': character_id})
+            if character_dict:
+                # 移除MongoDB自动添加的_id字段
+                character_dict.pop('_id', None)
+                # 从字典创建Character对象
+                return Character(**character_dict)
+            return None
         except Exception as e:
             print(f"获取角色失败: {e}")
             raise
@@ -73,3 +80,7 @@ dao = CharacterDAO()
 def save_character(character):
     """保存角色的便捷函数"""
     return dao.save_character(character)
+
+def get_character_by_id(character_id):
+    """根据ID获取角色的便捷函数"""
+    return dao.get_character_by_id(character_id)
