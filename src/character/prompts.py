@@ -28,6 +28,7 @@ GENERATOR_SYSTEM_MESSAGE_TEMPLATE = """
     例如：出生于农村，从小就是留守儿童，从小就被父母抛弃，后来被亲戚收养，学习也不好，在人世间苟活。
 - favorite_topics喜欢的话题列表与职业相关的有最多2个就可以，其他的随机生成，要保证自洽。
 - taboos列表生成时在你生成后添加 '政治', '宗教'进去
+- 不生成event_profile字段，输出时字典为空即可
 
 请以JSON格式输出完整的Character对象。
 """

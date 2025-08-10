@@ -1,6 +1,8 @@
 import json
 import uuid
 import random
+import time
+from pypinyin import lazy_pinyin
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional, Any
 from .event_profile import EventProfile
@@ -61,7 +63,11 @@ class Character:
     def __post_init__(self):
         # 生成唯一ID
         if self.character_id is None:
-            self.character_id = f"{self.name.lower().replace(' ', '_')}_{random.randint(1000, 9999)}"
+            # 将中文名字转换为拼音
+            pinyin_name = ''.join(lazy_pinyin(self.name))
+            # 使用时间戳生成唯一标识
+            timestamp = int(time.time())
+            self.character_id = f"{pinyin_name.lower().replace(' ', '_')}_{timestamp}"
         
         # 初始化事件配置
         if self.event_profile is None:

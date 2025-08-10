@@ -103,19 +103,3 @@ class CharacterLLMGenerator:
 
         # 创建Character对象
         return Character(**character_data)
-
-
-# 示例使用
-async def main():
-    generator = CharacterLLMGenerator()
-    try:
-        # 生成一个角色
-        character = await generator.generate_character(name="张三", age=23, gender="女", occupation="软件工程师", language="Chinese")
-        print(f"生成的角色: {character.name}")
-        print(character.to_json())
-    except Exception as e:
-        print(f"生成角色时出错: {e}")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
