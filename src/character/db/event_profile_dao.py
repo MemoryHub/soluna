@@ -33,6 +33,10 @@ class EventProfileDAO:
                     for event in event_profile_dict['life_path']
                 ]
 
+            # 导入convert_object_id函数处理datetime和ObjectId类型
+            from src.character.event.llm_event_gen import convert_object_id
+            event_profile_dict = convert_object_id(event_profile_dict)
+
             # 检查是否已存在此事件配置
             existing_profile = self.event_profiles_collection.find_one({'id': event_profile_dict.get('id')})
 

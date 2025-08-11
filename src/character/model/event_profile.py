@@ -36,7 +36,7 @@ class EventProfile:
     life_path: List[Event]  # 生活轨迹表，由事件组成的数组
     current_stage: str  # 当前生活阶段
     next_trend: str  # 未来趋势
-    event_triggers: Dict[str, Any]  # 事件触发条件
+    event_triggers: Dict[str, Any]  # 关键事件触发条件
 
     def __init__(self, character_id: str):
         self.id = str(uuid.uuid4())  # 生成唯一ID
