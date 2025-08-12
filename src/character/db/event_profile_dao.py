@@ -1,6 +1,7 @@
 from src.character.model.event_profile import EventProfile, Event
 from src.db.mongo_client import mongo_client
 import os
+from src.character.utils import convert_object_id
 
 class EventProfileDAO:
     def __init__(self):
@@ -33,8 +34,8 @@ class EventProfileDAO:
                     for event in event_profile_dict['life_path']
                 ]
 
-            # 导入convert_object_id函数处理datetime和ObjectId类型
-            from src.character.event.llm_event_gen import convert_object_id
+
+            
             event_profile_dict = convert_object_id(event_profile_dict)
 
             # 检查是否已存在此事件配置

@@ -3,6 +3,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from bson import ObjectId
+from src.character.utils import convert_object_id
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.conditions import MaxMessageTermination
 from autogen_agentchat.agents import AssistantAgent
@@ -20,28 +21,6 @@ from .prompts import (
     GENERATOR_SYSTEM_MESSAGE_TEMPLATE,
     REVIEWER_SYSTEM_MESSAGE
 )
-
-def convert_object_id(obj):
-    """转换MongoDB ObjectId和datetime为可JSON序列化的类型
-
-    递归处理嵌套对象，将MongoDB的ObjectId转换为字符串，datetime转换为ISO格式字符串
-
-    Args:
-        obj: 要转换的对象，可以是字典、列表、ObjectId、datetime或其他类型
-
-    Returns:
-        转换后的可JSON序列化对象
-    """
-    if isinstance(obj, dict):
-        return {k: convert_object_id(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_object_id(item) for item in obj]
-    elif isinstance(obj, ObjectId):
-        return str(obj)
-    elif isinstance(obj, datetime):
-        return obj.isoformat()  # 转换为ISO格式字符串
-    else:
-        return obj
 
 load_dotenv()
 
@@ -161,21 +140,39 @@ class EventProfileLLMGenerator:
 
         # 解析结果中的JSON
         event_profile_data = None
-        # 检查所有消息以寻找JSON
-        for message in result.messages:
-            if message.content and isinstance(message.content, str) and '{' in message.content:
+        original_result = result
+        result_message = None
+        
+        # 查找EventProfileGenerator的消息
+        if original_result and hasattr(original_result, 'messages') and original_result.messages:
+            for message in original_result.messages:
+                if hasattr(message, 'source') and message.source == 'EventProfileGenerator':
+                    result_message = message
+                    break
+            # 如果没找到，使用最后一条消息
+            if not result_message:
+                result_message = original_result.messages[-1]
+        
+        # 从找到的消息中提取JSON
+        if result_message and hasattr(result_message, 'content') and result_message.content:
+            if isinstance(result_message.content, str) and '{' in result_message.content:
                 try:
                     # 提取JSON部分
-                    start_idx = message.content.find('{')
-                    end_idx = message.content.rfind('}') + 1
-                    json_str = message.content[start_idx:end_idx]
+                    start_idx = result_message.content.find('{')
+                    end_idx = result_message.content.rfind('}') + 1
+                    json_str = result_message.content[start_idx:end_idx]
                     event_profile_data = json.loads(json_str)
-                    break  # 找到有效JSON后跳出循环
                 except json.JSONDecodeError:
                     pass
 
+        # 错误处理和日志记录
+        error_message = None
         if not event_profile_data:
-            raise ValueError("无法从生成结果中解析出有效的EventProfile JSON")
+            if result_message and hasattr(result_message, 'content'):
+                error_message = f"无法从EventProfileGenerator的响应中解析出有效的JSON。响应内容: {str(result_message.content)[:200]}..."
+            else:
+                error_message = "未收到EventProfileGenerator的有效响应"
+            raise ValueError(error_message)
 
         # 创建EventProfile对象
         event_profile = EventProfile(character_id=character_id)
@@ -266,7 +263,7 @@ class EventProfileLLMGenerator:
         existing_profiles = get_event_profiles_by_character_id(character_id)
         if existing_profiles and len(existing_profiles) > 0:
             print(f"角色{character_id}已存在事件配置，返回第一个配置ID")
-            return existing_profiles[0]['id']
+            return str(existing_profiles[0])
 
         # 生成新的事件配置
         event_profile = await self.generate_event_profile(character_id, language)
@@ -435,20 +432,6 @@ class EventProfileLLMGenerator:
 
 # 创建生成器实例
 generator = EventProfileLLMGenerator()
-
-async def create_event_profile(character_id: str, language: str = "Chinese") -> str:
-    """创建事件配置的便捷函数
-
-    便捷函数，调用generator实例的create_event_profile方法
-
-    Args:
-        character_id: 角色ID
-        language: 生成语言，默认为Chinese
-
-    Returns:
-        str: 事件配置ID
-    """
-    return await generator.create_event_profile(character_id, language)
 
 async def update_event_profile(profile_id: str, updates: dict) -> str:
     """更新事件配置的便捷函数

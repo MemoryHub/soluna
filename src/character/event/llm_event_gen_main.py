@@ -13,6 +13,7 @@ from src.character.db.event_profile_dao import (
     delete_event_profile
 )
 from src.character.db.character_dao import get_character_by_id
+from src.character.utils import convert_object_id
 
 async def initialize_event_profile(generator):
     try:
@@ -27,7 +28,7 @@ async def initialize_event_profile(generator):
         
         print(f"为角色 {character.name} 生成事件配置...")
         # 生成事件配置
-        event_profile = await generator.generate_event_profile(character_id=character_id, language="Chinese")
+        event_profile = await generator.create_event_profile(character_id=character_id, language="Chinese")
 
         print(f"生成的事件配置ID: {event_profile.id}")
         print(f"当前生活阶段: {event_profile.current_stage}")
@@ -61,11 +62,6 @@ async def initialize_event_profile(generator):
     except ValueError as ve:
         if "已存在事件配置" in str(ve):
             print(f"错误: {ve}")
-            # 提示用户查看已有的事件配置
-            existing_profiles = get_event_profiles_by_character_id(character_id)
-            if existing_profiles and len(existing_profiles) > 0:
-                print(f"角色{character_id}已有的事件配置ID: {existing_profiles[0]['id']}")
-                print("您可以使用此ID进行事件配置的更新操作。")
         else:
             print(f"生成事件配置时出错: {ve}")
     except Exception as e:

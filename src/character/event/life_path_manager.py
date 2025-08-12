@@ -15,33 +15,12 @@ from src.character.db.event_profile_dao import (
     add_event_to_profile,
     remove_event_from_profile
 )
+from src.character.utils import convert_object_id
 from dotenv import load_dotenv
 from .prompts import (
     DAILY_EVENT_GENERATOR_SYSTEM_MESSAGE_TEMPLATE,
     LIFE_PATH_REVIEWER_SYSTEM_MESSAGE
 )
-
-def convert_object_id(obj):
-    """转换MongoDB ObjectId和datetime为可JSON序列化的类型
-
-    递归处理嵌套对象，将MongoDB的ObjectId转换为字符串，datetime转换为ISO格式字符串
-
-    Args:
-        obj: 要转换的对象，可以是字典、列表、ObjectId、datetime或其他类型
-
-    Returns:
-        转换后的可JSON序列化对象
-    """
-    if isinstance(obj, dict):
-        return {k: convert_object_id(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_object_id(item) for item in obj]
-    elif isinstance(obj, ObjectId):
-        return str(obj)
-    elif isinstance(obj, datetime):
-        return obj.isoformat()  # 转换为ISO格式字符串
-    else:
-        return obj
 
 load_dotenv()
 

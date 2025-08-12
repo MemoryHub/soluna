@@ -1,6 +1,7 @@
 import random
 import inspect
-import random
+from datetime import datetime
+from bson import ObjectId
 from typing import List, Dict, Any
 from .data import (
     daily_activities, occupations, topics, taboos, beliefs, goals, fears,
@@ -96,6 +97,28 @@ def generate_daily_routine(occupation: str) -> List[Dict[str, Any]]:
 
     return routine
 
+
+def convert_object_id(obj):
+    """转换MongoDB ObjectId和datetime为可JSON序列化的类型
+
+    递归处理嵌套对象，将MongoDB的ObjectId转换为字符串，datetime转换为ISO格式字符串
+
+    Args:
+        obj: 要转换的对象，可以是字典、列表、ObjectId、datetime或其他类型
+
+    Returns:
+        转换后的可JSON序列化对象
+    """
+    if isinstance(obj, dict):
+        return {k: convert_object_id(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_object_id(item) for item in obj]
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, datetime):
+        return obj.isoformat()  # 转换为ISO格式字符串
+    else:
+        return obj
 
 def get_character_fields_description():
     """从Character类动态获取字段信息并生成字段描述字符串"""
