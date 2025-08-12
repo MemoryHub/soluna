@@ -5,7 +5,7 @@ import asyncio
 from datetime import datetime, timedelta
 # 添加项目根目录到Python路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
-from src.character.event.llm_event_gen import EventProfileLLMGenerator
+from src.character.event.llm_event_gen import EventProfileLLMGenerator, LifePathManager
 from src.character.db.event_profile_dao import (
     save_event_profile,
     get_event_profiles_by_character_id,
@@ -71,7 +71,7 @@ async def initialize_event_profile(generator):
     except Exception as e:
         print(f"生成事件配置时出现未知错误: {e}")
 
-async def add_event_to_life_path(generator):
+async def add_event_to_life_path(life_path_manager):
     try:
         # 获取用户输入的角色ID
         character_id = input("请输入角色ID: ")
@@ -112,44 +112,20 @@ async def add_event_to_life_path(generator):
         print(f"时间范围: {start_date_str} 至 {end_date_str}")
         print(f"最大事件数: {max_events}")
         
-        # 添加事件到人生路径
-        success = await generator.add_event_to_life_path(
+        # 添加事件到生活轨迹
+        success = await life_path_manager.add_event_to_life_path(
             profile_id=event_profile_id,
             start_time=start_date.strftime("%Y-%m-%d"),
             end_time=end_date.strftime("%Y-%m-%d"),
             max_events=max_events
         )
         
+        # 重新获取最新的事件配置
         if success:
-            print(f"成功添加事件到人生路径。当前人生路径事件数量: {len(event_profile.life_path)}")
-            
-            # 打印新增的事件
-            print("\n新增的人生路径事件详情:")
-            # 假设新增的事件是最后max_events个
-            new_events = event_profile.life_path[-max_events:]
-            for i, event in enumerate(new_events, 1):
-                print(f"\n事件 {i}: {event.type}")
-                print(f"描述: {event.description}")
-                print(f"开始时间: {event.start_time}")
-                print(f"状态: {event.status}")
-                print(f"是否关键事件: {'是' if event.is_key_event else '否'}")
-                print(f"影响: {event.impact}")
-                print(f"地点: {event.location}")
-                print(f"参与者: {', '.join(event.participants)}")
-                print(f"结果: {event.outcome}")
-                print(f"情绪评分: {event.emotion_score}")
-                if event.end_time:
-                    print(f"结束时间: {event.end_time}")
-            
-            # 询问是否保存更新后的事件配置
-            save_choice = input("是否保存更新后的事件配置到MongoDB? (y/n): ")
-            if save_choice.lower() == 'y':
-                save_event_profile(event_profile)
-                print("事件配置已保存到MongoDB!")
-            else:
-                print("事件配置未保存。")
+            event_profile = get_event_profile_by_id(event_profile_id)
+            print("添加生活轨迹成功!")
         else:
-            print("添加事件到人生路径失败。")
+            print("添加生活轨迹失败。")
     except ValueError as ve:
         print(f"输入格式错误: {ve}")
     except Exception as e:
@@ -157,6 +133,7 @@ async def add_event_to_life_path(generator):
 
 async def main():
     generator = EventProfileLLMGenerator()
+    life_path_manager = LifePathManager()
     
     while True:
         print("\n===== 角色事件系统测试 =====")
@@ -169,7 +146,7 @@ async def main():
         if choice == '1':
             await initialize_event_profile(generator)
         elif choice == '2':
-            await add_event_to_life_path(generator)
+            await add_event_to_life_path(life_path_manager)
         elif choice == '3':
             print("感谢使用角色事件系统测试工具，再见！")
             break
