@@ -1,0 +1,37 @@
+import os
+import sys
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# 将项目根目录添加到Python路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_root)
+
+# 初始化FastAPI应用
+app = FastAPI(title="Soluna Character API", version="1.0")
+
+# 添加CORS中间件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js默认端口
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 导入并注册路由
+from src.api.character.routes import router as character_router
+from src.api.event.routes import router as event_router
+
+app.include_router(character_router)
+app.include_router(event_router)
+
+# 根路由
+@app.get("/")
+async def root():
+    return {"message": "Soluna Character API is running. Visit /docs for documentation."}
+
+# 启动服务
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

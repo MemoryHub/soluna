@@ -74,6 +74,23 @@ class CharacterDAO:
             print(f"获取所有角色失败: {e}")
             raise
 
+    def delete_character(self, character_id):
+        """根据ID删除角色
+
+        Args:
+            character_id: 角色ID
+
+        Returns:
+            bool: 是否删除成功
+        """
+        try:
+            result = self.characters_collection.delete_one({'character_id': character_id})
+            print(f"删除角色成功: {character_id}")
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"删除角色失败: {e}")
+            return False
+
 # 创建DAO实例
 dao = CharacterDAO()
 
@@ -81,6 +98,15 @@ def save_character(character):
     """保存角色的便捷函数"""
     return dao.save_character(character)
 
+def get_all_characters():
+    """获取所有角色的便捷函数"""
+    return dao.get_all_characters()
+
+
 def get_character_by_id(character_id):
     """根据ID获取角色的便捷函数"""
     return dao.get_character_by_id(character_id)
+
+def delete_character(character_id):
+    """删除角色的便捷函数"""
+    return dao.delete_character(character_id)

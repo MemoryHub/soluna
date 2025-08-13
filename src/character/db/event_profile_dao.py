@@ -88,6 +88,23 @@ class EventProfileDAO:
             print(f"获取事件配置列表失败: {e}")
             raise
 
+    def delete_event_profile_by_character_id(self, character_id):
+        """根据角色ID删除事件配置
+
+        Args:
+            character_id: 角色ID
+
+        Returns:
+            bool: 是否删除成功
+        """
+        try:
+            result = self.event_profiles_collection.delete_many({"character_id": character_id})
+            print(f"删除角色 {character_id} 的事件配置成功，共删除 {result.deleted_count} 条记录")
+            return result.deleted_count > 0
+        except Exception as e:
+            print(f"删除事件配置失败: {e}")
+            return False
+
     def get_event_profile_by_event_id(self, event_id):
         """根据事件ID获取包含该事件的事件配置
 
@@ -201,3 +218,7 @@ def add_event_to_profile(profile_id, event):
 def remove_event_from_profile(profile_id, event_id):
     """从事件配置中移除事件的便捷函数"""
     return DAO.remove_event_from_profile(profile_id, event_id)
+
+def delete_event_profile_by_character_id(character_id):
+    """根据角色ID删除事件配置的便捷函数"""
+    return DAO.delete_event_profile_by_character_id(character_id)
