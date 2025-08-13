@@ -69,8 +69,8 @@ class EventService:
         return [Event(**event) for event in events]
 
     @staticmethod
-    async def create_event_profile(character_id: str, language: str = "Chinese") -> str:
-        """创建事件配置"""
+    async def generate_event_profile(character_id: str, language: str = "Chinese") -> dict:
+        """生成事件配置"""
         try:
             # 验证角色是否存在
             character = get_character_by_id(character_id)
@@ -80,7 +80,8 @@ class EventService:
             # 生成事件配置（不生成life_path）
             event_profile = await generator.create_event_profile(character_id=character_id, language=language)
 
-            return event_profile.id
+            # 转换为字典返回
+            return event_profile.to_dict() if hasattr(event_profile, 'to_dict') else event_profile.__dict__
         except ValueError as ve:
             if "已存在事件配置" in str(ve):
                 print(f"错误: {ve}")
@@ -89,6 +90,16 @@ class EventService:
             return None
         except Exception as e:
             print(f"生成事件配置时出现未知错误: {e}")
+            return None
+
+    @staticmethod
+    def save_event_profile(event_profile: dict) -> str:
+        """保存事件配置到数据库"""
+        try:
+            # 调用DAO层保存事件配置
+            return event_profile_dao.save_event_profile(event_profile)
+        except Exception as e:
+            print(f"保存事件配置时出错: {e}")
             return None
 
     @staticmethod
@@ -121,7 +132,7 @@ class EventService:
             deleted_count = 0
             for profile in event_profiles:
                 profile_id = profile.get('id')
-                if event_profile_dao.delete_event_profile(profile_id):
+                if event_profile_dao.delete_event_profile_by_character_id(character_id):
                     deleted_count += 1
                     print(f"成功删除事件配置: {profile_id}")
                 else:

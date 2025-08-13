@@ -432,7 +432,7 @@ class LifePathManager:
         if profile:
             # 确保profile是字典类型
             if isinstance(profile, dict):
-                # 从字典创建EventProfile对象
+                # 从字典创建EventProfile对象 
                 event_profile = EventProfile(character_id=profile['character_id'])
                 event_profile.id = profile_id
                 # 验证event_profile类型

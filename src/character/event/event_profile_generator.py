@@ -268,8 +268,8 @@ class EventProfileLLMGenerator:
         # 生成新的事件配置
         event_profile = await self.generate_event_profile(character_id, language)
 
-        # 保存到数据库
-        return save_event_profile(event_profile)
+        # 返回生成的事件配置对象，不保存到数据库
+        return event_profile
 
     async def update_event_profile(self, profile_id: str, updates: dict) -> str:
         """更新事件配置

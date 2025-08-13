@@ -14,6 +14,9 @@ from src.service.event.service import event_service
 from src.api.responds.base_response import ApiResponse
 
 
+# 创建主路由
+router = APIRouter()
+
 # 创建事件配置路由
 profile_router = APIRouter(prefix="/api/characters/{character_id}/event-profiles", tags=["event-profiles"])
 # 创建生活轨迹路由
@@ -21,13 +24,21 @@ life_path_router = APIRouter(prefix="/api/characters/{character_id}/life-paths",
 
 
 # 事件配置相关接口
-@profile_router.post("", response_model=ApiResponse)
-async def create_event_profile(character_id: str, language: str = "Chinese"):
-    """新建事件配置"""
-    result = await event_service.create_event_profile(character_id, language)
+@profile_router.post("/generate", response_model=ApiResponse)
+async def generate_event_profile(character_id: str, language: str = "Chinese"):
+    """生成事件配置"""
+    result = await event_service.generate_event_profile(character_id, language)
     if not result:
-        return ApiResponse.error(recode=500, msg="事件配置创建失败")
-    return ApiResponse.success(data={"profile_id": result}, msg="事件配置创建成功")
+        return ApiResponse.error(recode=500, msg="事件配置生成失败")
+    return ApiResponse.success(data=result, msg="事件配置生成成功")
+
+@profile_router.post("/save", response_model=ApiResponse)
+async def save_event_profile(event_profile: dict):
+    """保存事件配置"""
+    result = event_service.save_event_profile(event_profile)
+    if not result:
+        return ApiResponse.error(recode=500, msg="事件配置保存失败")
+    return ApiResponse.success(data={"profile_id": result}, msg="事件配置保存成功")
 
 @profile_router.post("/delete/{profile_id}", response_model=ApiResponse)
 async def delete_event_profile(character_id: str, profile_id: str):
@@ -47,10 +58,12 @@ async def delete_event_profile_by_character(character_id: str):
 
 
 # 生活轨迹相关接口
-@life_path_router.post("", response_model=ApiResponse)
-async def create_life_path(character_id: str, profile_id: str, start_time: str, end_time: str, max_events: int = 3):
+from fastapi import Body
+
+@life_path_router.post("/generate", response_model=ApiResponse)
+async def create_life_path(character_id: str, start_date: str = Body(...), end_date: str = Body(...), max_events: int = Body(3)):
     """新建生活轨迹"""
-    success = await event_service.generate_life_path(character_id, profile_id, start_time, end_time, max_events)
+    success = await event_service.generate_life_path(character_id, start_date, end_date, max_events)
     if not success:
         return ApiResponse.error(recode=500, msg="生活轨迹创建失败")
     return ApiResponse.success(data={"success": True}, msg="生活轨迹创建成功")
