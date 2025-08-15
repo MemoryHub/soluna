@@ -10,7 +10,7 @@ async def main():
     generator = CharacterLLMGenerator()
     try:
         # 生成一个角色
-        character = await generator.generate_character(name="张信珩", age=1, gender="男", occupation="学龄前", language="Chinese")
+        character = await generator.generate_character(name="董厨", age=60, gender="男", occupation="厨师", language="Chinese")
 
         print(f"生成的角色: {character.name}")
         print(character.to_json())

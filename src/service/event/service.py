@@ -8,7 +8,7 @@ from src.character.event.life_path_manager import manager as life_path_manager
 from src.character.event.event_profile_generator import EventProfileLLMGenerator
 from src.character.db.event_profile_dao import EventProfileDAO
 from src.character.db.character_dao import get_character_by_id
-from src.character.db.character_dao import get_character_by_id
+from src.character.utils import convert_object_id
 
 
 # 初始化DAO
@@ -56,17 +56,6 @@ class EventService:
             print(f"生成事件时出错: {e}")
             return {"success": False, "message": f"生成事件时出错: {str(e)}"}
 
-    @staticmethod
-    def get_character_events(character_id: str) -> List[Event]:
-        """获取角色的所有事件"""
-        event_profiles = event_profile_dao.get_event_profiles_by_character_id(character_id)
-        if not event_profiles or len(event_profiles) == 0:
-            return []
-        
-        # 从事件配置中提取事件列表
-        events = event_profiles[0].get("life_path", [])
-        # 将事件字典转换为Event对象
-        return [Event(**event) for event in events]
 
     @staticmethod
     async def generate_event_profile(character_id: str, language: str = "Chinese") -> dict:
@@ -111,6 +100,31 @@ class EventService:
         except Exception as e:
             print(f"删除事件配置时出错: {e}")
             return False
+
+    @staticmethod
+    def get_event_profiles_by_character_id(character_id: str) -> Optional[List[dict]]:
+        """根据角色ID获取事件配置列表"""
+        try:
+            # 调用DAO层获取事件配置
+            return event_profile_dao.get_event_profiles_by_character_id(character_id)
+        except Exception as e:
+            print(f"获取事件配置时出错: {e}")
+            return None
+
+    @staticmethod
+    def get_event_profiles_by_character_ids(character_ids: List[str]) -> Optional[Dict[str, List[dict]]]:
+        """根据角色ID数组批量获取事件配置列表"""
+        try:
+            # 调用DAO层的批量查询方法
+            result = event_profile_dao.get_event_profiles_by_character_ids(character_ids)
+            # 使用convert_object_id函数处理结果中的ObjectId
+            if result:
+                print(f"转换前: {type(result)}")
+                result = convert_object_id(result)
+            return result
+        except Exception as e:
+            print(f"批量获取事件配置时出错: {e}")
+            return None
 
     @staticmethod
     async def delete_event_profile_by_character_id(character_id: str) -> bool:

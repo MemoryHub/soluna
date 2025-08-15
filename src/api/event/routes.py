@@ -4,6 +4,7 @@ import os
 from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from fastapi import Body
 
 # 将项目根目录添加到Python路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) 
@@ -18,12 +19,28 @@ from src.api.responds.base_response import ApiResponse
 router = APIRouter()
 
 # 创建事件配置路由
-profile_router = APIRouter(prefix="/api/characters/{character_id}/event-profiles", tags=["event-profiles"])
+profile_router = APIRouter(prefix="/api/event-profiles", tags=["event-profiles"])
 # 创建生活轨迹路由
-life_path_router = APIRouter(prefix="/api/characters/{character_id}/life-paths", tags=["life-paths"])
+life_path_router = APIRouter(prefix="/api/life-paths", tags=["life-paths"])
 
 
 # 事件配置相关接口
+@profile_router.post("/get-by-character-id", response_model=ApiResponse) 
+async def get_event_profiles_by_character(character_id: str):
+    """根据角色ID获取事件配置列表"""
+    result = event_service.get_event_profiles_by_character_id(character_id)
+    if result is None:
+        return ApiResponse.not_found(msg="未找到该角色的事件配置")
+    return ApiResponse.success(data=result, msg="事件配置获取成功")
+
+@profile_router.post("/get-by-character-ids", response_model=ApiResponse) 
+async def get_event_profiles_by_character_ids(character_ids: list[str] = Body(...)):
+    """根据角色ID数组批量获取事件配置列表"""
+    result = event_service.get_event_profiles_by_character_ids(character_ids)
+    if result is None:
+        return ApiResponse.not_found(msg="未找到事件配置")
+    return ApiResponse.success(data=result, msg="事件配置批量获取成功")
+
 @profile_router.post("/generate", response_model=ApiResponse)
 async def generate_event_profile(character_id: str, language: str = "Chinese"):
     """生成事件配置"""
@@ -56,9 +73,6 @@ async def delete_event_profile_by_character(character_id: str):
         return ApiResponse.not_found(msg="未找到角色或事件配置删除失败")
     return ApiResponse.success(data={"success": True}, msg="事件配置已删除")
 
-
-# 生活轨迹相关接口
-from fastapi import Body
 
 @life_path_router.post("/generate", response_model=ApiResponse)
 async def create_life_path(character_id: str, start_date: str = Body(...), end_date: str = Body(...), max_events: int = Body(3)):

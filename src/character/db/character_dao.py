@@ -69,7 +69,11 @@ class CharacterDAO:
             list: 角色列表
         """
         try:
-            return list(self.characters_collection.find())
+            characters = list(self.characters_collection.find())
+            # 移除每个角色的_id字段
+            for character in characters:
+                character.pop('_id', None)
+            return characters
         except Exception as e:
             print(f"获取所有角色失败: {e}")
             raise

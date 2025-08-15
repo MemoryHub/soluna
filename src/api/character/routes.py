@@ -37,7 +37,7 @@ async def generate_character(
         return ApiResponse.error(recode=500, msg="角色生成失败")
     return ApiResponse.success(data=character, msg="角色生成成功")
 
-@router.post("/{character_id}", response_model=ApiResponse)
+@router.post("/get/{character_id}", response_model=ApiResponse)
 async def get_character(character_id: str):
     """根据ID获取角色详情"""
     character = character_service.get_character_by_id(character_id)

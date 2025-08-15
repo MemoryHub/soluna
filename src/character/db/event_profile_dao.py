@@ -88,6 +88,27 @@ class EventProfileDAO:
             print(f"获取事件配置列表失败: {e}")
             raise
 
+    def get_event_profiles_by_character_ids(self, character_ids):
+        """根据角色ID数组批量获取事件配置
+
+        Args:
+            character_ids: 角色ID数组
+
+        Returns:
+            dict: 以角色ID为键、事件配置列表为值的字典
+        """
+        try:
+            # 使用$in操作符进行批量查询
+            profiles = list(self.event_profiles_collection.find({'character_id': {'$in': character_ids}}))
+            # 按角色ID分组
+            result = {character_id: [] for character_id in character_ids}
+            for profile in profiles:
+                result[profile['character_id']].append(profile)
+            return result
+        except Exception as e:
+            print(f"批量获取事件配置列表失败: {e}")
+            raise
+
     def delete_event_profile_by_character_id(self, character_id):
         """根据角色ID删除事件配置
 
