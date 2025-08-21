@@ -70,7 +70,6 @@ class CharacterLLMGenerator:
             initial_task += " 请确保所有字段内容都使用英文输出。"
         else:
             initial_task += " 请确保所有字段内容都使用中文输出。"
-
         if name:
             initial_task += f" 角色姓名为{name}。"
         if age:

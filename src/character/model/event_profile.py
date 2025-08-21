@@ -9,7 +9,7 @@ class Event:
     event_id: str  # 事件唯一ID
     type: str  # 事件类型
     description: str  # 事件描述
-    start_time: datetime  # 开始时间
+    start_time: datetime  # 真实世界开始时间
     status: str  # 事件状态：'not_started'(未发生), 'in_progress'(正在发生), 'completed'(已完成)
     is_key_event: bool  # 是否为关键节点事件
     impact: str  # 事件影响
@@ -17,7 +17,7 @@ class Event:
     participants: List[str]  # 参与事件的人物列表
     outcome: str  # 事件最终结果
     emotion_score: float  # 情绪影响评分
-    end_time: Optional[datetime] = None  # 结束时间
+    end_time: Optional[datetime] = None  # 真实世界结束时间
     dependencies: List[str] = None  # 依赖的事件ID列表
 
     def __post_init__(self):

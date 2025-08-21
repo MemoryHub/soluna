@@ -11,7 +11,7 @@ from src.service.event.service import event_service
 class CharacterService:
     @staticmethod
     async def generate_character(name: str = None, age: int = None, gender: str = None, occupation: str = None, language: str = "Chinese"):
-        """使用LLM生成角色并保存到数据库"""
+        """使用LLM生成角色"""
         generator = CharacterLLMGenerator()
         try:
             # 生成角色
@@ -22,14 +22,20 @@ class CharacterService:
                 occupation=occupation, 
                 language=language
             )
-            
-            # 保存角色到数据库
-            if character:
-                save_character(character)
             return character
         except Exception as e:
             print(f"生成角色时出错: {e}")
             return None
+    
+    @staticmethod
+    def submit_character(character: Character) -> bool:
+        """保存角色到数据库"""
+        try:
+            save_character(character)
+            return True
+        except Exception as e:
+            print(f"保存角色时出错: {e}")
+            return False
 
     @staticmethod
     def get_character_by_id(character_id: str) -> Optional[Character]:

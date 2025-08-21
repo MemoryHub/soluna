@@ -1,14 +1,12 @@
 import os
 import sys
-import os
-from fastapi import APIRouter, HTTPException
-from typing import List, Optional
+from fastapi import APIRouter
+from src.api.models.character import GenerateCharacterRequest, SaveCharacterRequest
 
 # 将项目根目录添加到Python路径
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) 
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.append(project_root)
 
-from src.character.model.character import Character
 from src.service.character.service import character_service
 from src.api.responds.base_response import ApiResponse
 
@@ -17,15 +15,20 @@ from src.api.responds.base_response import ApiResponse
 router = APIRouter(prefix="/api/characters", tags=["characters"])
 
 
+
+
 @router.post("/generate", response_model=ApiResponse)
 async def generate_character(
-    name: Optional[str] = None,
-    age: Optional[int] = None,
-    gender: Optional[str] = None,
-    occupation: Optional[str] = None,
-    language: str = "Chinese"
+    request_data: GenerateCharacterRequest
 ):
     """生成角色"""
+    # 从请求体中提取参数
+    name = request_data.name
+    age = request_data.age
+    gender = request_data.gender
+    occupation = request_data.occupation
+    language = request_data.language
+    
     character = await character_service.generate_character(
         name=name,
         age=age,
@@ -36,6 +39,25 @@ async def generate_character(
     if not character:
         return ApiResponse.error(recode=500, msg="角色生成失败")
     return ApiResponse.success(data=character, msg="角色生成成功")
+
+@router.post("/save", response_model=ApiResponse)
+async def save_character(request: SaveCharacterRequest):
+    """保存角色到数据库（加密版）"""
+    try:
+        # 从加密请求中获取角色对象
+        character = request.get_character()
+        
+        # 提交角色到服务层
+        result = character_service.submit_character(character)
+        if not result:
+            return ApiResponse.error(recode=500, msg="角色保存失败")
+        
+        # 将保存后的Character对象转换为字典返回
+        return ApiResponse.success(data=character.to_dict(), msg="角色保存成功")
+    except Exception as e:
+        # 捕获并记录详细错误信息，但向客户端返回更通用的错误消息
+        print(f"保存角色时发生错误: {str(e)}")
+        return ApiResponse.error(recode=400, msg="角色数据无效或保存失败")
 
 @router.post("/get/{character_id}", response_model=ApiResponse)
 async def get_character(character_id: str):
