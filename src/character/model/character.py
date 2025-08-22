@@ -59,6 +59,8 @@ class Character:
     # 系统字段
     character_id: str = None  # 角色唯一标识符，如不提供则自动生成 此字段数据类型为str
     is_preset: bool = False  # 是否为预设角色，预设角色为系统提供的示例角色 此字段数据类型为bool
+    created_at: float = None  # 角色创建时间戳，此字段数据类型为float
+    updated_at: float = None  # 角色最后更新时间戳，此字段数据类型为float
 
     def __post_init__(self):
         # 生成唯一ID
@@ -68,6 +70,13 @@ class Character:
             # 使用时间戳生成唯一标识
             timestamp = int(time.time())
             self.character_id = f"{pinyin_name.lower().replace(' ', '_')}_{timestamp}"
+        
+        # 设置创建时间和更新时间
+        current_time = time.time()
+        if self.created_at is None:
+            self.created_at = current_time
+        # 无论是否是新角色，都更新updated_at
+        self.updated_at = current_time
         
         # 初始化事件配置
         if self.event_profile is None:

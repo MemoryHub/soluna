@@ -88,3 +88,10 @@ class SaveCharacterRequest(BaseModel):
         encrypted = security_utils.encrypt(character_json)
         return cls(encrypted_character=encrypted)
 
+
+class CharacterListRequest(BaseModel):
+    """角色列表请求模型"""
+    limit: int = 10
+    offset: int = 0
+    first_letter: str = "*"
+

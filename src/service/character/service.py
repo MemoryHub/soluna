@@ -43,11 +43,10 @@ class CharacterService:
         return get_character_by_id_dao(character_id)
 
     @staticmethod
-    def get_all_characters(limit: int = 10, offset: int = 0) -> List[dict]:
-        """获取所有角色列表"""
-        all_characters = get_all_characters_dao()
-        # 应用分页
-        return all_characters[offset:offset+limit]
+    def get_all_characters(limit: int = 10, offset: int = 0, first_letter: str = "*") -> dict:
+        """获取所有角色列表（支持分页和首字母筛选）"""
+        result = get_all_characters_dao(limit, offset, first_letter)
+        return result
 
     @staticmethod
     def delete_character(character_id: str) -> bool:

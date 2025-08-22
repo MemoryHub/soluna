@@ -1,7 +1,7 @@
 import os
 import sys
 from fastapi import APIRouter
-from src.api.models.character import GenerateCharacterRequest, SaveCharacterRequest
+from src.api.models.character import GenerateCharacterRequest, SaveCharacterRequest, CharacterListRequest
 
 # 将项目根目录添加到Python路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -68,9 +68,9 @@ async def get_character(character_id: str):
     return ApiResponse.success(data=character, msg="获取角色详情成功")
 
 @router.post("/list", response_model=ApiResponse)
-async def get_all_characters(limit: int = 10, offset: int = 0):
+async def get_all_characters(request: CharacterListRequest):
     """获取所有角色列表"""
-    characters = character_service.get_all_characters(limit, offset)
+    characters = character_service.get_all_characters(request.limit, request.offset, request.first_letter)
     return ApiResponse.success(data=characters, msg="获取角色列表成功")
 
 @router.post("/delete/{character_id}", response_model=ApiResponse)
