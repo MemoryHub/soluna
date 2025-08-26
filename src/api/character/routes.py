@@ -2,20 +2,19 @@ import os
 import sys
 from fastapi import APIRouter
 from src.api.models.character import GenerateCharacterRequest, SaveCharacterRequest, CharacterListRequest
+import json
 
-# 将项目根目录添加到Python路径
+# 先将项目根目录添加到Python路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 sys.path.append(project_root)
 
+# 然后再导入其他模块
 from src.service.character.service import character_service
 from src.api.responds.base_response import ApiResponse
-
+from src.utils.security import security_utils
 
 # 创建路由
 router = APIRouter(prefix="/api/characters", tags=["characters"])
-
-
-
 
 @router.post("/generate", response_model=ApiResponse)
 async def generate_character(
@@ -71,7 +70,15 @@ async def get_character(character_id: str):
 async def get_all_characters(request: CharacterListRequest):
     """获取所有角色列表"""
     characters = character_service.get_all_characters(request.limit, request.offset, request.first_letter)
-    return ApiResponse.success(data=characters, msg="获取角色列表成功")
+    
+    # 对角色列表数据进行加密
+    # 先将数据转换为JSON字符串
+    characters_json = json.dumps(characters, ensure_ascii=False, default=str)
+    # 加密数据
+    encrypted_data = security_utils.encrypt(characters_json)
+    
+    # 返回加密后的数据
+    return ApiResponse.success(data={"encrypted_characters_data": encrypted_data}, msg="获取角色列表成功")
 
 @router.post("/delete/{character_id}", response_model=ApiResponse)
 async def delete_character(character_id: str):

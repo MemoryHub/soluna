@@ -17,6 +17,7 @@ class SecurityUtils:
     
     def encrypt(self, data: str) -> str:
         """加密数据"""
+        
         # 生成随机IV
         iv = os.urandom(16)
         
@@ -36,7 +37,6 @@ class SecurityUtils:
         return result
     
     def decrypt(self, encrypted_data: str) -> str:
-       
         try:
             # 解码base64数据
             raw_data = base64.b64decode(encrypted_data.encode('utf-8'))
@@ -58,7 +58,6 @@ class SecurityUtils:
             
             # 解码为字符串
             result = data.decode('utf-8')
-            
             return result
         except Exception as e:
             raise ValueError(f"解密过程发生异常: {str(e)}")
