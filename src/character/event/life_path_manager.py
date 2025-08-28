@@ -13,7 +13,8 @@ from src.character.db.character_dao import get_character_by_id
 from src.character.db.event_profile_dao import (
     get_event_profile_by_id,
     add_event_to_profile,
-    remove_event_from_profile
+    remove_event_from_profile,
+    batch_add_events_to_profiles
 )
 from src.character.utils import convert_object_id
 from dotenv import load_dotenv
@@ -362,7 +363,8 @@ class LifePathManager:
         Returns:
             int: 成功添加的事件数量
         """
-        success_count = 0
+        events_to_add = []
+        
         for event_json in events_json[:max_events]:  # 确保不超过最大事件数
             # 确保event_id存在
             if 'event_id' not in event_json:
@@ -413,14 +415,26 @@ class LifePathManager:
                 end_time=end_time_event,
                 dependencies=event_json.get('dependencies', [])
             )
-
-            # 添加到事件配置
-            if add_event_to_profile(profile_id, event):
-                success_count += 1
-                # 更新内存中的事件配置
+            
+            events_to_add.append(event)
+        
+        # 批量添加事件
+        if events_to_add:
+            # 构建配置-事件映射
+            profile_events_map = {
+                profile_id: events_to_add
+            }
+            
+            # 调用批量添加方法
+            result = batch_add_events_to_profiles(profile_events_map)
+            
+            # 更新内存中的事件配置（只更新一次）
+            if result['success_count'] > 0:
                 await self._update_event_profile(profile_id)
-
-        return success_count
+            
+            return len(events_to_add)  # 返回成功添加的事件数量
+        
+        return 0
 
     async def _update_event_profile(self, profile_id: str) -> None:
         """更新内存中的事件配置

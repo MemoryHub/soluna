@@ -2,6 +2,7 @@ from src.character.model.event_profile import EventProfile, Event
 from src.db.mongo_client import mongo_client
 import os
 from src.character.utils import convert_object_id
+from pymongo import UpdateOne
 
 class EventProfileDAO:
     def __init__(self):
@@ -213,6 +214,58 @@ class EventProfileDAO:
             print(f"移除事件失败: {e}")
             raise
 
+    def batch_add_events_to_profiles(self, profile_events_map):
+        """批量向多个事件配置中添加事件
+
+        Args:
+            profile_events_map: 字典，键为配置ID，值为要添加的事件列表
+
+        Returns:
+            dict: 包含成功和失败的统计信息
+        """
+        try:
+            success_count = 0
+            failed_count = 0
+            failed_profiles = []
+            
+            # 准备批量更新操作
+            bulk_operations = []
+            for profile_id, events in profile_events_map.items():
+                if events:
+                    # 转换事件对象为字典
+                    event_dicts = []
+                    for event in events:
+                        event_dict = event.to_dict() if hasattr(event, 'to_dict') else event.__dict__
+                        event_dicts.append(event_dict)
+                    
+                    # 添加批量更新操作
+                    bulk_operations.append(
+                        UpdateOne(
+                            {'id': profile_id},
+                            {'$push': {'life_path': {'$each': event_dicts}}}
+                        )
+                    )
+            
+            # 执行批量更新
+            if bulk_operations:
+                result = self.event_profiles_collection.bulk_write(bulk_operations)
+                success_count = result.modified_count
+                failed_count = len(bulk_operations) - success_count
+                
+                if failed_count > 0:
+                    # 收集失败的配置ID（在实际应用中可能需要更精确的错误处理）
+                    failed_profiles = [op['update_one']['filter']['id'] for op in bulk_operations]
+            
+            print(f"批量添加事件完成: 成功{success_count}个配置, 失败{failed_count}个配置")
+            return {
+                'success_count': success_count,
+                'failed_count': failed_count,
+                'failed_profiles': failed_profiles
+            }
+        except Exception as e:
+            print(f"批量添加事件失败: {e}")
+            raise
+
 # 创建DAO实例
 DAO = EventProfileDAO()
 
@@ -243,3 +296,7 @@ def remove_event_from_profile(profile_id, event_id):
 def delete_event_profile_by_character_id(character_id):
     """根据角色ID删除事件配置的便捷函数"""
     return DAO.delete_event_profile_by_character_id(character_id)
+
+def batch_add_events_to_profiles(profile_events_map):
+    """批量向多个事件配置中添加事件的便捷函数"""
+    return DAO.batch_add_events_to_profiles(profile_events_map)
