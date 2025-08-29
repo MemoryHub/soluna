@@ -16,6 +16,7 @@ class GenerateCharacterRequest(BaseModel):
 class SaveCharacterRequest(BaseModel):
     """保存角色请求模型（加密版）"""
     encrypted_character: str
+    is_with_event: bool = False  # 是否同时生成事件配置
     
     @validator('encrypted_character')
     def validate_encrypted_character(cls, v):

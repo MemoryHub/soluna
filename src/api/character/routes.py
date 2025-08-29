@@ -12,6 +12,9 @@ sys.path.append(project_root)
 from src.service.character.service import character_service
 from src.api.responds.base_response import ApiResponse
 from src.utils.security import security_utils
+from src.db.mongo_client import mongo_client
+from src.service.character.service import character_service as verify_service
+import asyncio
 
 # 创建路由
 router = APIRouter(prefix="/api/characters", tags=["characters"])
@@ -50,6 +53,62 @@ async def save_character(request: SaveCharacterRequest):
         result = character_service.submit_character(character)
         if not result:
             return ApiResponse.error(recode=500, msg="角色保存失败")
+        
+        # 强制刷新数据库连接以确保数据一致性
+        try:
+            # 强制刷新连接状态
+            mongo_client.get_database().command('ping')
+        except Exception as e:
+            print(f"数据库连接检查失败: {str(e)}")
+            return ApiResponse.error(recode=500, msg="数据库连接异常")
+        
+        # 验证角色是否真正保存到数据库（添加重试机制确保数据一致性）
+        # 重试验证角色是否真正写入数据库
+        max_retries = 3
+        retry_delay = 0.1  # 100ms
+        
+        saved_character = None
+        for attempt in range(max_retries):
+            saved_character = verify_service.get_character_by_id(character.character_id)
+            if saved_character:
+                # 验证关键字段一致性
+                if (saved_character.character_id == character.character_id and 
+                    saved_character.name == character.name):
+                    break
+                else:
+                    print(f"角色数据验证失败，第{attempt+1}次重试")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(retry_delay)
+        
+        if not saved_character:
+            return ApiResponse.error(recode=500, msg="角色保存后验证失败，数据库写入可能存在延迟")
+        
+        # 只有在角色真正保存成功后，才生成事件配置
+        if request.is_with_event:
+            try:
+                # 导入事件服务
+                from src.service.event.service import EventService
+                
+                # 生成事件配置
+                event_profile = await EventService.generate_event_profile(
+                    character_id=character.character_id,
+                    language="Chinese"
+                )
+                
+                if not event_profile:
+                    return ApiResponse.error(recode=500, msg="事件配置生成失败")
+                
+                # 保存事件配置到数据库
+                saved_event_id = EventService.save_event_profile(event_profile)
+                if not saved_event_id:
+                    return ApiResponse.error(recode=500, msg="事件配置保存失败")
+                
+                print(f"成功为角色 {character.character_id} 生成并保存事件配置，事件ID: {saved_event_id}")
+                
+            except Exception as e:
+                # 事件配置生成或保存失败时返回错误
+                print(f"生成或保存事件配置时出错: {str(e)}")
+                return ApiResponse.error(recode=500, msg=f"事件配置处理失败: {str(e)}")
         
         # 将保存后的Character对象转换为字典返回
         return ApiResponse.success(data=character.to_dict(), msg="角色保存成功")
