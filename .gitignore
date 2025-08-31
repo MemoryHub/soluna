@@ -80,6 +80,8 @@ env/
 
 # Environment variables
 .env
+.env.development
+.env.production
 
 # IDE files
 .vscode/

@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Nginx反向代理 - 开发环境
+  nginx:
+    image: nginx:alpine
+    container_name: soluna-nginx-dev
+    ports:
+      - "3000:3000"  # 开发环境使用3000端口
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - soluna-web
+      - soluna-api
+      - soluna-scheduler
+    networks:
+      - soluna-network-dev
+    restart: unless-stopped
+
+  # soluna-web (Next.js前端) - 开发环境
+  soluna-web:
+    build:
+      context: ../soluna-web
+      dockerfile: Dockerfile
+    container_name: soluna-web-dev
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3000/api  # 本地开发地址
+    ports:
+      - "3001:3000"  # 直接暴露端口用于开发
+    networks:
+      - soluna-network-dev
+    restart: unless-stopped
+    volumes:
+      - ../soluna-web:/app  # 挂载源码用于热重载
+      - /app/node_modules
+    command: npm run dev
+
+  # soluna-api (Python后端) - 开发环境
+  soluna-api:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: soluna-api-dev
+    environment:
+      - ENVIRONMENT=development
+      - MONGODB_HOST=${MONGODB_HOST:-localhost}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-soluna}
+      - MONGODB_USERNAME=${MONGODB_USERNAME:-}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD:-}
+      - MYSQL_HOST=${MYSQL_HOST:-localhost}
+      - MYSQL_PORT=${MYSQL_PORT:-3306}
+      - MYSQL_USERNAME=${MYSQL_USERNAME:-root}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-soluna_dev}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-960d9c89097c486fb843a92883ef1686}
+      - BASE_URL=${BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+    ports:
+      - "8001:8000"  # 开发端口
+    networks:
+      - soluna-network-dev
+    restart: unless-stopped
+    volumes:
+      - ./:/app  # 挂载源码用于开发
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # soluna-scheduler (Python调度器) - 开发环境
+  soluna-scheduler:
+    build:
+      context: ../soluna-scheduler
+      dockerfile: Dockerfile
+    container_name: soluna-scheduler-dev
+    environment:
+      - ENVIRONMENT=development
+      - SOLUNA_API_URL=${SOLUNA_API_URL:-http://soluna-api:8000}
+      - SOLUNA_BATCH_GENERATE_ENDPOINT=${SOLUNA_BATCH_GENERATE_ENDPOINT:-/api/life-paths/batch-generate-all}
+      - SCHEDULER_CRON_EXPRESSION=${SCHEDULER_CRON_EXPRESSION:-0 0 * * *}
+      - MAX_RETRIES=${MAX_RETRIES:-3}
+      - RETRY_DELAY=${RETRY_DELAY:-30}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-300}
+    volumes:
+      - ../soluna-scheduler:/app  # 挂载源码
+      - ./logs/scheduler-dev:/app/logs
+    networks:
+      - soluna-network-dev
+    restart: unless-stopped
+    depends_on:
+      - soluna-api
+    command: python scheduler.py --debug
+
+networks:
+  soluna-network-dev:
+    driver: bridge
+
+volumes:
+  soluna-logs-dev:

@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  soluna-web:
+    build:
+      context: ../soluna-web
+      dockerfile: Dockerfile
+    container_name: soluna-web
+    ports:
+      - "3000:3000"  # 映射到宿主机3000端口
+    environment:
+      - NODE_ENV=${ENVIRONMENT:-production}
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN:-localhost}/api
+      - TZ=Asia/Shanghai
+    expose:
+      - "3000"
+    networks:
+      - soluna-network
+    restart: unless-stopped
+
+  soluna-api:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: soluna-api
+    ports:
+      - "8000:8000"  # 映射到宿主机8000端口
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - MONGODB_HOST=${MONGODB_HOST}
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BASE_URL=${BASE_URL}
+      - TZ=Asia/Shanghai
+    expose:
+      - "8000"
+    networks:
+      - soluna-network
+    restart: unless-stopped
+
+  soluna-scheduler:
+    build:
+      context: ../soluna-scheduler
+      dockerfile: Dockerfile
+    container_name: soluna-scheduler
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - SOLUNA_API_URL=${SOLUNA_API_URL:-http://soluna-api:8000}
+      - SOLUNA_BATCH_GENERATE_ENDPOINT=${SOLUNA_BATCH_GENERATE_ENDPOINT:-/api/life-paths/batch-generate-all}
+      - SCHEDULER_CRON_EXPRESSION=${SCHEDULER_CRON_EXPRESSION:-0 0 * * *}
+      - MAX_RETRIES=${MAX_RETRIES:-5}
+      - RETRY_DELAY=${RETRY_DELAY:-60}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-600}
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./logs/scheduler:/app/logs
+    networks:
+      - soluna-network
+    restart: unless-stopped
+    depends_on:
+      - soluna-api
+
+networks:
+  soluna-network:
+    driver: bridge
+
+volumes:
+  soluna-logs:
