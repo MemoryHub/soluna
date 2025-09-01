@@ -13,6 +13,7 @@ from src.user.model.user import User
 from src.utils.security import security_utils
 from src.service.invited_code.service import invite_code_service
 from src.character.utils import convert_object_id
+from src.user.yunpian_service import yunpian_service
 
 class UserService:
     """用户服务层，处理用户相关的业务逻辑"""
@@ -50,6 +51,12 @@ class UserService:
         
         # 生成随机验证码
         verification_code = ''.join(random.choices('0123456789', k=6))
+
+        # 云片发送验证码
+        send_result = yunpian_service.send_verification_code(phone_number, verification_code)
+        
+        if not send_result['success']:
+            raise Exception(f"发送验证码失败: {send_result['message']}")
         
         # 计算过期时间
         expire_time = datetime.now() + timedelta(minutes=self.code_expire_minutes)
@@ -58,9 +65,8 @@ class UserService:
         if not verification_code_dao.save_code(phone_number, verification_code, expire_time, ip_address):
             raise Exception("保存验证码失败")
         
-        # 在实际生产环境中，这里应该调用短信服务API发送验证码
-        # 目前仅记录日志
-        print(f"向手机号 {phone_number} 发送验证码: {verification_code}")
+        # 记录成功日志
+        print(f"向手机号 {phone_number} 发送验证码成功: {verification_code}, 短信ID: {send_result.get('sid', 'N/A')}")
         
         # 返回验证码信息（不包含验证码本身）
         return {
