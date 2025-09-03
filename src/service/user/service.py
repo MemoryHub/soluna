@@ -226,11 +226,27 @@ class UserService:
     
     def logout(self, token: str) -> bool:
         """用户登出"""
-        # 先验证令牌是否有效
-        if not token_dao.validate_token(token):
-            return False
-        # 再删除令牌
-        return token_dao.delete_token(token)
+        try:
+            # 记录登出尝试
+            print(f"用户尝试登出，token: {token[:10]}...")
+            
+            # 直接删除令牌，不验证其有效性
+            # 无论令牌是否有效、是否过期，都执行删除操作
+            delete_result = token_dao.delete_token(token)
+            
+            if delete_result:
+                print(f"用户登出成功，token已删除: {token[:10]}...")
+            else:
+                print(f"用户登出完成，token可能不存在或已被删除: {token[:10]}...")
+            
+            # 无论删除结果如何，都返回成功
+            # 因为用户的意图是登出，我们应该尊重这个意图
+            return True
+                
+        except Exception as e:
+            print(f"登出过程中发生异常: {str(e)}")
+            # 记录异常但不抛出，避免500错误
+            return True  # 即使出现异常，也让用户登出成功
     
     def get_user_info(self, user_id: str) -> Optional[Dict[str, Any]]:
         """获取用户信息"""
