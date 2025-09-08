@@ -232,7 +232,9 @@ class EventProfileLLMGenerator:
                     location=event_data.get('location', ''),
                     participants=event_data.get('participants', []),
                     outcome=event_data.get('outcome', ''),
-                    emotion_score=event_data.get('emotion_score', 0.0),
+                    pleasure_score=event_data.get('pleasure_score', 0),
+                    arousal_score=event_data.get('arousal_score', 0),
+                    dominance_score=event_data.get('dominance_score', 0),
                     end_time=event_data.get('end_time'),
                     dependencies=event_data.get('dependencies', [])
                 )
@@ -367,6 +369,11 @@ class EventProfileLLMGenerator:
                         if not isinstance(event_data.get('start_time'), datetime):
                             event_data['start_time'] = datetime.now()
                         event_data['end_time'] = event_data['start_time'] + timedelta(hours=1)
+                # 获取PAD三维度评分
+                pleasure_score = event_data.get('pleasure_score', 0)
+                arousal_score = event_data.get('arousal_score', 0)
+                dominance_score = event_data.get('dominance_score', 0)
+                
                 # 创建Event对象
                 event = Event(
                     event_id=event_data.get('event_id', str(uuid.uuid4())),
@@ -379,7 +386,9 @@ class EventProfileLLMGenerator:
                     location=event_data.get('location', ''),
                     participants=event_data.get('participants', []),
                     outcome=event_data.get('outcome', ''),
-                    emotion_score=event_data.get('emotion_score', 0.0),
+                    pleasure_score=pleasure_score,
+                    arousal_score=arousal_score,
+                    dominance_score=dominance_score,
                     end_time=event_data.get('end_time'),
                     dependencies=event_data.get('dependencies', [])
                 )

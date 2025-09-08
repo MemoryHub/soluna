@@ -71,7 +71,12 @@ async def delete_event_profile_by_character(character_id: str):
 
 
 @life_path_router.post("/generate", response_model=ApiResponse)
-async def create_life_path(character_id: str, start_date: str = Body(...), end_date: str = Body(...), max_events: int = Body(3)):
+async def create_life_path(
+    character_id: str = Body(...), 
+    start_date: str = Body(...), 
+    end_date: str = Body(...), 
+    max_events: int = Body(3)
+):
     """新建生活轨迹"""
     success = await event_service.generate_life_path(character_id, start_date, end_date, max_events)
     if not success:

@@ -16,7 +16,13 @@ class Event:
     location: str  # 事件发生地点
     participants: List[str]  # 参与事件的人物列表
     outcome: str  # 事件最终结果
-    emotion_score: float  # 情绪影响评分
+    
+    # PAD三维度情绪评分系统 (Pleasure-Arousal-Dominance)
+    # 每个维度范围: -100 到 100
+    pleasure_score: int  # 愉悦度评分 (-100=极度不愉快, 100=极度愉快)
+    arousal_score: int  # 唤醒度评分 (-100=极度平静, 100=极度兴奋)
+    dominance_score: int  # 支配度评分 (-100=完全被动, 100=完全主动)
+    
     end_time: Optional[datetime] = None  # 真实世界结束时间
     dependencies: List[str] = None  # 依赖的事件ID列表
 

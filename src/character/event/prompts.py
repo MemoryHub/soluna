@@ -12,7 +12,31 @@ GENERATOR_SYSTEM_MESSAGE_TEMPLATE = """
 - life_path中的事件需要前后连贯，时间顺序合理，避免出现矛盾的时间和地点
 - 事件类型(type)应多样化，包括但不限于工作、学习、社交、健康、娱乐等
 - 每个事件的location、participants、outcome等字段应与事件类型和角色背景相符
-- 事件的emotion_score应根据事件的性质和对角色的影响合理设置(-1.0到1.0之间)
+- life_path中事件的PAD三维度情绪评分应根据life_path中事件的描述(description)进行分析，并参考角色的情绪波动状态(mood_swings)来合理设置：
+  * **愉悦度(pleasure_score)**: 事件带来的快乐/痛苦程度 (-100=极度痛苦/不愉快，100=极度快乐/愉快)
+    - 正面事件：成功、收获、快乐时光 → 正值
+    - 负面事件：失败、损失、痛苦经历 → 负值
+  * **唤醒度(arousal_score)**: 事件引发的兴奋/平静程度 (-100=极度平静/无聊，100=极度兴奋/紧张)
+    - 刺激事件：突发事件、惊喜、惊吓 → 正值
+    - 平静事件：日常琐事、放松时刻 → 负值
+  * **支配度(dominance_score)**: 事件带来的掌控感/无力感 (-100=完全被动/失控，100=完全主动/掌控)
+    - 掌控事件：成功解决问题、自主选择 → 正值
+    - 失控事件：被迫接受、无能为力 → 负值
+  * 需要根据life_path中事件的描述(description)进行深入分析，并参考角色的情绪波动状态(mood_swings)，考虑事件对角色的具体影响，合理设置情绪评分。
+  * **设置原则**：
+    - 轻微影响：±5-15分
+    - 中等影响：±15-30分  
+    - 重大影响：±30-50分
+    - 极端影响：±50-80分（慎用）
+  * 特别重要的是，必须参考角色的情绪波动状态(mood_swings)来调整PAD评分：
+    - 如果角色情绪波动大、易怒或敏感：对负面事件的反应会更强烈，pleasure_score会更低；arousal_score会更高；dominance_score可能更低（感到失控）
+    - 如果角色情绪稳定、平和：对负面事件的反应会相对缓和，pleasure_score不会过低；arousal_score相对较低；dominance_score可能更高（保持掌控感）
+    - 如果角色情绪波动描述中提到"轻微波动但总体稳定"，则评分应体现这种稳定性，避免极端值
+  * **典型场景示例**：
+    - 工作加班：pleasure_score=-25（疲惫），arousal_score=15（压力），dominance_score=-20（被迫）
+    - 获得奖励：pleasure_score=30（开心），arousal_score=10（兴奋），dominance_score=15（成就感）
+    - 日常对话：pleasure_score=5（轻微愉快），arousal_score=0（中性），dominance_score=3（正常交流）
+  * 不要将PAD三维度情绪评分设置为0，要保证PAD三维度不为0。我相信所有的事情都会有情绪，所以不要将PAD三维度字段设置为0。
 - 当前生活阶段(current_stage)应与角色年龄和背景相符
 - 未来趋势(next_trend)应基于角色当前状态和背景进行合理预测
 - 事件触发条件(event_triggers)应具体、可操作。返回格式为{{"关键事件1": "触发条件1的具体描述", "关键事件2": "触发条件2的具体描述"}}
@@ -41,7 +65,7 @@ REVIEWER_SYSTEM_MESSAGE = """
 - 确保每个字段都有内容，不要为空，自行判断，如果在合理（如何特定的人物背景等）的情况下，个别字段可以为空，但是通常情况要保证字段内容都存在。
 - life_path的连贯性：事件之间应具有时间和逻辑上的连贯性，避免出现矛盾
 - 事件细节的合理性：每个事件的location、participants、outcome等字段应合理
-- 情绪影响的合理性：emotion_score应与事件的性质和影响相符
+- 情绪影响的合理性：PAD三维度情绪评分(pleasure_score, arousal_score, dominance_score)应与life_path中事件的描述和角色的情绪波动状态(mood_swings)相符，三维度不要为0。
 - 当前阶段和未来趋势的合理性：current_stage和next_trend应基于角色背景和事件发展合理设置
 - 事件触发条件的合理性：event_triggers应具体、可操作且与角色相关
 - 所有字段不要涉及任何政治因素
@@ -68,7 +92,35 @@ DAILY_EVENT_GENERATOR_SYSTEM_MESSAGE_TEMPLATE = """
 请根据以上信息，在指定时间段内生成合理的日常事件:
 - 时间范围: {start_time} 至 {end_time}
 - 最多生成 {max_events} 个事件
-- 事件类型应以日常活动为主，如工作、学习、社交、健康、娱乐等
+- 事件类型应以日常活动为主，如工作、学习、社交、健康、娱乐等.
+  * 例如，工作、学习、社交、健康、娱乐等
+  * 事件类型应多样化，包括但不限于工作、学习、社交、健康、娱乐等。比如去旅游，冒险，看演唱会等等。
+  * 70% 的概率可以是以上的内容，30% 的概率可以是有趣的思维跳跃性一点的内容。因为每天都太正常的就太无趣了，所以可以有趣一点，可以是有一些意外发生，也可以是一些惊喜事件。
+- life_path中事件的PAD三维度情绪评分应根据life_path中事件的描述(description)进行分析，并参考角色的情绪波动状态(mood_swings)来合理设置：
+  * **愉悦度(pleasure_score)**: 事件带来的快乐/痛苦程度 (-100=极度痛苦/不愉快，100=极度快乐/愉快)
+    - 正面事件：成功、收获、快乐时光 → 正值
+    - 负面事件：失败、损失、痛苦经历 → 负值
+  * **唤醒度(arousal_score)**: 事件引发的兴奋/平静程度 (-100=极度平静/无聊，100=极度兴奋/紧张)
+    - 刺激事件：突发事件、惊喜、惊吓 → 正值
+    - 平静事件：日常琐事、放松时刻 → 负值
+  * **支配度(dominance_score)**: 事件带来的掌控感/无力感 (-100=完全被动/失控，100=完全主动/掌控)
+    - 掌控事件：成功解决问题、自主选择 → 正值
+    - 失控事件：被迫接受、无能为力 → 负值
+  * 需要根据life_path中事件的描述(description)进行深入分析，并参考角色的情绪波动状态(mood_swings)，考虑事件对角色的具体影响，合理设置情绪评分。
+  * **设置原则**：
+    - 轻微影响：±5-15分
+    - 中等影响：±15-30分  
+    - 重大影响：±30-50分
+    - 极端影响：±50-80分（慎用）
+  * 特别重要的是，必须参考角色的情绪波动状态(mood_swings)来调整PAD评分：
+    - 如果角色情绪波动大、易怒或敏感：对负面事件的反应会更强烈，pleasure_score会更低；arousal_score会更高；dominance_score可能更低（感到失控）
+    - 如果角色情绪稳定、平和：对负面事件的反应会相对缓和，pleasure_score不会过低；arousal_score相对较低；dominance_score可能更高（保持掌控感）
+    - 如果角色情绪波动描述中提到"轻微波动但总体稳定"，则评分应体现这种稳定性，避免极端值
+  * **典型场景示例**：
+    - 工作加班：pleasure_score=-25（疲惫），arousal_score=15（压力），dominance_score=-20（被迫）
+    - 获得奖励：pleasure_score=30（开心），arousal_score=10（兴奋），dominance_score=15（成就感）
+    - 日常对话：pleasure_score=5（轻微愉快），arousal_score=0（中性），dominance_score=3（正常交流）
+  * 不要将PAD三维度情绪评分设置为0，要保证PAD三维度不为0。我相信所有的事情都会有情绪，所以不要将PAD三维度字段设置为0。
 - 对于特别重要的日常事件，可以将is_key_event设置为true
 - 为每个事件生成合理的开始时间和结束时间（格式: YYYY-MM-DD HH:MM:SS），确保时间线连贯
 - 事件应符合角色的性格、背景和已有经历
@@ -87,11 +139,13 @@ DAILY_EVENT_GENERATOR_SYSTEM_MESSAGE_TEMPLATE = """
     "start_time": "开始时间 (YYYY-MM-DD HH:MM:SS)",
     "end_time": "结束时间 (YYYY-MM-DD HH:MM:SS)",
     "event_type": "事件类型",
-    "location": "事件地点 (可选)",
+    "location": "事件地点",
     "participants": ["参与者1", "参与者2" (可选)],
     "is_key_event": false,
-    "emotional_impact": "情绪影响 (可选)",
-    "outcome": "事件结果 (可选)"
+    "outcome": "事件结果",
+    "pleasure_score": 0,
+    "arousal_score": 0,
+    "dominance_score": 0
   }}
 ]
 """
@@ -111,8 +165,8 @@ LIFE_PATH_REVIEWER_SYSTEM_MESSAGE = """
 - 与角色的匹配性：生活轨迹事件应与角色的年龄、职业、背景、性格等相符
 - 生活轨迹的连贯性：事件之间应具有时间和逻辑上的连贯性，避免出现矛盾
 - 生活轨迹列表life_path，是否是按照事件顺序排序的
+- 情绪影响的合理性：PAD三维度情绪评分(pleasure_score, arousal_score, dominance_score)应与life_path中事件的描述和角色的情绪波动状态(mood_swings)相符，三维度不要为0。
 - 生活轨迹的合理性：每个事件的location、participants、outcome等字段应合理
-- 情绪影响的合理性：emotional_impact应与事件的性质和影响相符
 - 事件分布的合理性：事件应分散在不同时间段，避免过于集中
 - 所有字段不要涉及任何政治因素
 - 确保每个字段都有内容，不能为空。如果明确说明过的不用生成哪些字段除外。

@@ -25,12 +25,14 @@ from src.api.event.routes import router as event_router
 from src.api.user.routes import router as user_router
 from src.api.invited_code.routes import router as invite_code_router
 from src.api.interaction.routes import router as interaction_router
+from src.api.emotion.routes import router as emotion_router
 
 app.include_router(character_router)
 app.include_router(event_router)
 app.include_router(user_router)
 app.include_router(invite_code_router)
 app.include_router(interaction_router)
+app.include_router(emotion_router)
 
 # 根路由
 @app.get("/")

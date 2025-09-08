@@ -268,7 +268,7 @@ class LifePathManager:
         self.daily_event_reviewer_agent = self._create_life_path_reviewer_agent(character_info, existing_profile)
 
         # 准备提示，添加具体时间信息
-        task = f"请在{start_time} 00:00:00至{end_time} 23:59:59期间为角色生成最多{max_events}个合理的日常事件。"
+        task = f"请在{start_time} 00:00:00至{end_time} 23:59:59期间为角色生成0至{max_events}条合理的日常事件。"
 
         # 运行agent生成事件
         team = RoundRobinGroupChat(
@@ -399,6 +399,11 @@ class LifePathManager:
             else:
                 end_time_event = None
 
+            # 获取PAD三维度评分
+            pleasure_score = event_json.get('pleasure_score', 0)
+            arousal_score = event_json.get('arousal_score', 0)
+            dominance_score = event_json.get('dominance_score', 0)
+            
             # 创建Event对象
             event = Event(
                 event_id=event_json['event_id'],
@@ -411,7 +416,9 @@ class LifePathManager:
                 location=event_json.get('location', ''),
                 participants=event_json.get('participants', []),
                 outcome=event_json.get('outcome', ''),
-                emotion_score=event_json.get('emotion_score', 0.0),
+                pleasure_score=pleasure_score,
+                arousal_score=arousal_score,
+                dominance_score=dominance_score,
                 end_time=end_time_event,
                 dependencies=event_json.get('dependencies', [])
             )
@@ -493,6 +500,11 @@ class LifePathManager:
                 else:
                     end_time = None
 
+                # 获取PAD三维度评分
+                pleasure_score = event_dict.get('pleasure_score', 0)
+                arousal_score = event_dict.get('arousal_score', 0)
+                dominance_score = event_dict.get('dominance_score', 0)
+                
                 # 创建Event对象
                 event = Event(
                     event_id=event_dict.get('event_id', str(uuid.uuid4())),
@@ -505,7 +517,9 @@ class LifePathManager:
                     location=event_dict.get('location', ''),
                     participants=event_dict.get('participants', []),
                     outcome=event_dict.get('outcome', ''),
-                    emotion_score=event_dict.get('emotion_score', 0.0),
+                    pleasure_score=pleasure_score,
+                    arousal_score=arousal_score,
+                    dominance_score=dominance_score,
                     end_time=end_time,
                     dependencies=event_dict.get('dependencies', [])
                 )

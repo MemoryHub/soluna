@@ -38,11 +38,12 @@ class EventService:
                 print(f"未找到角色{character.name}的事件配置，请先创建事件配置")
                 return {"success": False, "message": "事件配置不存在，请先创建"}
             else:
-                event_profile = EventProfile(**event_profiles[0])
-                print(f"找到角色{character.name}的事件配置: {event_profile.id}")
+                profile_data = event_profiles[0]
+                profile_id = profile_data['id']
+                print(f"找到角色{character.name}的事件配置: {profile_id}")
 
             success = await life_path_manager.add_event_to_life_path(
-                profile_id=event_profile.id,
+                profile_id=profile_id,
                 start_time=start_date,
                 end_time=end_date,
                 max_events=max_events
@@ -124,7 +125,6 @@ class EventService:
             result = event_profile_dao.get_event_profiles_by_character_ids(character_ids)
             # 使用convert_object_id函数处理结果中的ObjectId
             if result:
-                print(f"转换前: {type(result)}")
                 result = convert_object_id(result)
             return result
         except Exception as e:

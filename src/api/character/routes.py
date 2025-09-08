@@ -14,6 +14,8 @@ from src.api.responds.base_response import ApiResponse
 from src.utils.security import security_utils
 from src.db.mongo_client import mongo_client
 from src.service.character.service import character_service as verify_service
+from src.service.emotion.service import emotion_service
+from src.service.event.service import EventService
 import asyncio
 
 # 创建路由
@@ -86,9 +88,6 @@ async def save_character(request: SaveCharacterRequest):
         # 只有在角色真正保存成功后，才生成事件配置
         if request.is_with_event:
             try:
-                # 导入事件服务
-                from src.service.event.service import EventService
-                
                 # 生成事件配置
                 event_profile = await EventService.generate_event_profile(
                     character_id=character.character_id,
@@ -104,6 +103,20 @@ async def save_character(request: SaveCharacterRequest):
                     return ApiResponse.error(recode=500, msg="事件配置保存失败")
                 
                 print(f"成功为角色 {character.character_id} 生成并保存事件配置，事件ID: {saved_event_id}")
+                
+                # 第三步：初始化角色情绪并存入数据库
+                try:
+                    # 初始化角色情绪状态（包含随机PAD打分）
+                    emotion_init_result = emotion_service.initialize_character_emotion(character.character_id)
+                    
+                    if emotion_init_result:
+                        print(f"成功为角色 {character.character_id} 初始化情绪状态（包含随机PAD打分）")
+                    else:
+                        print(f"为角色 {character.character_id} 初始化情绪状态失败")
+                        
+                except Exception as e:
+                    # 情绪初始化失败时不中断主流程，仅记录错误
+                    print(f"初始化角色情绪状态时出错: {str(e)}")
                 
             except Exception as e:
                 # 事件配置生成或保存失败时返回错误

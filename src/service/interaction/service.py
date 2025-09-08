@@ -9,6 +9,9 @@ sys.path.append(project_root)
 
 from src.interaction.db.interaction_dao import InteractionDAO
 from src.interaction.model.interaction_models import InteractionRecord, InteractionStats, InteractionType
+from src.emotion.config.interaction_emotion_config import InteractionEmotionConfig
+from src.service.emotion.service import emotion_service
+from src.emotion.model.emotion_mapping import EmotionMappings
 
 # 初始化DAO
 interaction_dao = InteractionDAO()
@@ -50,14 +53,75 @@ class InteractionService:
             # 更新互动统计
             interaction_dao.update_interaction_stats(character_id, interaction_type)
             
+            # 获取互动操作的情绪调整值
+            pleasure_change, arousal_change, dominance_change = InteractionEmotionConfig.get_emotion_adjustment(interaction_type)
+            
+            # 更新角色情绪状态
+            emotion_updated = False
+            if any([pleasure_change, arousal_change, dominance_change]):
+                try:
+                    emotion_updated = emotion_service.update_emotion_from_event(
+                        character_id=character_id,
+                        pleasure_change=pleasure_change,
+                        arousal_change=arousal_change,
+                        dominance_change=dominance_change
+                    )
+                    print(f"角色 {character_id} 情绪更新结果: {emotion_updated}, 调整值: P={pleasure_change}, A={arousal_change}, D={dominance_change}")
+                except Exception as e:
+                    print(f"更新角色情绪时出错: {e}")
+                    # 情绪更新失败不影响互动成功
+            
             # 获取更新后的统计数据
             stats = interaction_dao.get_interaction_stats(character_id)
+            
+            # 获取完整的情绪信息
+            current_emotion = None
+            if emotion_updated:
+                try:
+                    current_emotion = emotion_service.get_character_emotion(character_id)
+                    if current_emotion:
+                        # 获取情绪映射信息
+                        emotion_calc_service = emotion_service.emotion_service
+                        emotion_state = emotion_calc_service.calculate_emotion_from_pad(
+                            character_id,
+                            current_emotion["pleasure_score"],
+                            current_emotion["arousal_score"],
+                            current_emotion["dominance_score"]
+                        )
+                        
+                        # 获取对应的EmotionMapping
+                        mappings = EmotionMappings()
+                        emotion_mapping = mappings.find_matching_emotion(
+                            emotion_state.pleasure,
+                            emotion_state.arousal,
+                            emotion_state.dominance
+                        )
+                        
+                        # 添加完整的情绪信息
+                        current_emotion.update({
+                            "traditional": emotion_mapping.traditional,
+                            "vibe": emotion_mapping.vibe,
+                            "emoji": emotion_mapping.emoji,
+                            "color": emotion_mapping.color,
+                            "description": emotion_mapping.description,
+                            "emotion_type": emotion_mapping.emotion_type
+                        })
+                except Exception as e:
+                    print(f"获取完整情绪信息失败: {e}")
+                    current_emotion = None
             
             return {
                 "success": True,
                 "message": "互动成功",
                 "record_id": record_id,
-                "stats": stats.to_dict() if stats else None
+                "stats": stats.to_dict() if stats else None,
+                "emotion_updated": emotion_updated,
+                "emotion_adjustment": {
+                    "pleasure_change": pleasure_change,
+                    "arousal_change": arousal_change,
+                    "dominance_change": dominance_change
+                },
+                "current_emotion": current_emotion
             }
             
         except Exception as e:

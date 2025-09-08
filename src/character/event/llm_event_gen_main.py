@@ -48,7 +48,9 @@ async def initialize_event_profile(generator):
             print(f"地点: {event.location}")
             print(f"参与者: {', '.join(event.participants)}")
             print(f"结果: {event.outcome}")
-            print(f"情绪评分: {event.emotion_score}")
+            print(f"愉悦度 (P): {event.pleasure_score}")
+            print(f"唤醒度 (A): {event.arousal_score}")
+            print(f"支配度 (D): {event.dominance_score}")
             if event.end_time:
                 print(f"结束时间: {event.end_time}")
         
